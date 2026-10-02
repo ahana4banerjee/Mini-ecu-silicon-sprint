@@ -113,7 +113,7 @@ The target platform for the Mini-ECU is the **STM32F401RET6** microcontroller (N
 - **UART:** Asynchronous serial communication interface (115200 baud, 8N1) for command receiving and telemetry output.
 - **EXTI (External Interrupt):** Dedicated interrupt line connected to an Emergency Stop push-button/switch for immediate hardware override.
 
-> ⚠️ **Note on Pin Mapping:** Physical pin mapping and peripheral instance assignments (e.g., USART1 vs USART2, TIM2 vs TIM3, ADC1 channels) are **PENDING / TO BE DEFINED** during Phase 1 hardware configuration.
+> 📌 **Hardware Pin Mapping:** Status LEDs (PB0, PB1, PB2, PB10) and Touch START (PA0) are **Finalized** in `Core/Inc/board_config.h`. Peripheral instances (TIM1 PWM, ADC1_IN1, USART2) are allocated for Phase 2–4.
 
 ---
 

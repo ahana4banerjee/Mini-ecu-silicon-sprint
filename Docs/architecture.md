@@ -297,16 +297,21 @@ The integration strategy combines modular unit testing with end-to-end state tra
 
 ## 19. Hardware Pin Mapping
 
-```
-===================================================================
-                   PIN MAPPING — TO BE DEFINED
-===================================================================
-Target MCU: STM32F401RET6
-Pin assignments for GPIO LEDs, Touch START, Potentiometer ADC,
-PWM Output, UART RX/TX, and EXTI Emergency Stop will be defined 
-during Phase 1 hardware configuration.
-===================================================================
-```
+Target Microcontroller: **STM32F401RET6**
+
+| Signal Name | MCU Port / Pin | Mode / Peripheral | Function / Description | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| **ORANGE_LED** | `PB0` | GPIO Output | IDLE State Indicator LED | 🟢 **Finalized** |
+| **GREEN_LED** | `PB1` | GPIO Output | READY State Indicator LED | 🟢 **Finalized** |
+| **BLUE_LED** | `PB2` | GPIO Output | RUNNING State Indicator LED | 🟢 **Finalized** |
+| **RED_LED** | `PB10` | GPIO Output | EMERGENCY State Indicator LED | 🟢 **Finalized** |
+| **TOUCH_START** | `PA0` | GPIO Input (Pull-down) | System Enable Touch Input Sensor | 🟢 **Finalized** |
+| **ESTOP_BTN** | `PC13` | EXTI15_10 Interrupt | Emergency Stop Hardware Switch | 🟡 Planned (Phase 4) |
+| **POT_ADC** | `PA1` | ADC1_IN1 Analog Input | Potentiometer Speed Selection | 🟡 Planned (Phase 2) |
+| **MOTOR_PWM** | `PA8` | TIM1_CH1 PWM Output | Motor Speed Control Signal | 🟡 Planned (Phase 2) |
+| **UART_TX** | `PA2` | USART2_TX (AF7) | Serial Telemetry Transmit | 🟡 Planned (Phase 3) |
+| **UART_RX** | `PA3` | USART2_RX (AF7) | Serial Command Receive | 🟡 Planned (Phase 3) |
+
 
 ---
 
