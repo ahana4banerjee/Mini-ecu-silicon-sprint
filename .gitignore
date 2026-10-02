@@ -1,0 +1,44 @@
+# STM32CubeIDE / Eclipse build outputs
+Debug/
+Release/
+build/
+bin/
+
+# Object and Dependency files
+*.o
+*.obj
+*.d
+*.su
+*.list
+*.map
+
+# Executable / Binary outputs
+*.elf
+*.hex
+*.bin
+
+# Log and Temp files
+*.log
+*.tmp
+*.bak
+*.cdump
+
+# Eclipse / STM32CubeIDE user-specific workspace settings
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE backups and temporary files
+*.swp
+*~
+*.bak
+.idea/
+.vscode/
