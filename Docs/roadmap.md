@@ -7,8 +7,8 @@
 | Phase | Description | Status | Target Completion |
 | :--- | :--- | :---: | :---: |
 | **Phase 0** | Project Foundation & Architecture Documentation | 🟢 **COMPLETED** | Current |
-| **Phase 1** | GPIO + System Foundation + FSM | 🟡 **IN PROGRESS** | Phase 1 Sprint |
-| **Phase 2** | ADC + PWM + Speed Control | ⚪ **NOT STARTED** | Phase 2 Sprint |
+| **Phase 1** | GPIO + System Foundation + FSM | 🟢 **COMPLETED** | Phase 1 Sprint |
+| **Phase 2** | ADC + PWM + Speed Control | 🟢 **COMPLETED** | Phase 2 Sprint |
 | **Phase 3** | UART + Command Processing + Diagnostics | ⚪ **NOT STARTED** | Phase 3 Sprint |
 | **Phase 4** | EXTI + Emergency Stop + Recovery | ⚪ **NOT STARTED** | Phase 4 Sprint |
 | **Phase 5** | Full System Integration | ⚪ **NOT STARTED** | Phase 5 Sprint |
@@ -52,10 +52,10 @@ Configure GPIO peripherals, implement Touch START input sampling, drive status L
 - [x] Define physical pin assignments for status LEDs and Touch START sensor (`board_config.h`)
 - [x] Initialize GPIO output pins for Orange, Green, Blue, and Red status LEDs (`GPIOB`: PB0, PB1, PB2, PB10)
 - [x] Initialize GPIO input pin for Touch START input sensor (`GPIOA`: PA0)
-- [x] Implement core FSM state manager structure and enum states (`ecu_fsm.h` in PR)
-- [x] Implement `IDLE` state behavior (Orange LED ON, Motor disabled) (`ecu_fsm.c` in PR)
-- [x] Implement `READY` state behavior (Green LED ON, Motor disabled) (`ecu_fsm.c` in PR)
-- [x] Implement FSM transition logic from `IDLE` $\rightarrow$ `READY` on Touch START trigger (`ecu_fsm.c` in PR)
+- [x] Implement core FSM state manager structure and enum states (`ecu_fsm.h`)
+- [x] Implement `IDLE` state behavior (Orange LED ON, Motor disabled) (`ecu_fsm.c`)
+- [x] Implement `READY` state behavior (Green LED ON, Motor disabled) (`ecu_fsm.c`)
+- [x] Implement FSM transition logic from `IDLE` $\rightarrow$ `READY` on Touch START trigger (`ecu_fsm.c`)
 - [x] Implement visual LED verification routines
 
 ### Expected Deliverables
@@ -83,14 +83,14 @@ Configure GPIO peripherals, implement Touch START input sampling, drive status L
 Configure Timer PWM and ADC peripherals to sample potentiometer position and continuously translate analog readings into proportional motor speed PWM duty cycles.
 
 ### Tasks
-- [ ] Select Timer instance and pin channel for PWM output generation
-- [ ] Configure Timer PWM mode (target frequency: $1\text{ kHz} - 20\text{ kHz}$)
-- [ ] Select ADC channel for Potentiometer analog input pin
-- [ ] Configure ADC 12-bit conversion mode
-- [ ] Develop ADC sampling and noise filtering (moving average filter)
-- [ ] Develop conversion function mapping 12-bit ADC value ($0 - 4095$) to PWM Duty Cycle ($0\% - 100\%$)
-- [ ] Integrate motor speed control into `RUNNING` state
-- [ ] Guarantee $0\%$ PWM output whenever state is not `RUNNING`
+- [x] Select Timer instance and pin channel for PWM output generation (`TIM1_CH1` on `PA8`)
+- [x] Configure Timer PWM mode (target frequency: $1\text{ kHz}$)
+- [x] Select ADC channel for Potentiometer analog input pin (`ADC1_IN1` on `PA1`)
+- [x] Configure ADC 12-bit conversion mode
+- [x] Develop ADC sampling and noise filtering (deadband filtering in `ADC_To_PWM_Percent`)
+- [x] Develop conversion function mapping 12-bit ADC value ($0 - 4095$) to PWM Duty Cycle ($0\% - 100\%$)
+- [x] Integrate motor speed control into `RUNNING` state
+- [x] Guarantee $0\%$ PWM output whenever state is not `RUNNING`
 
 ### Expected Deliverables
 - `motor_control.c` / `motor_control.h`
