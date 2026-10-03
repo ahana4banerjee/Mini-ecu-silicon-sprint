@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-The **MINI-ECU** (Miniature Electronic Control Unit) is a bare-metal embedded drive control system targeting the **STM32F401RET6** microcontroller (ARM Cortex-M4 @ 84 MHz). 
+The **MINI-ECU** (Miniature Electronic Control Unit) is a bare-metal embedded drive control system targeting the **STM32F401RET6** microcontroller (ARM Cortex-M4 @ 16 MHz HSI / up to 84 MHz PLL). 
 
 The primary objective of the MINI-ECU is to coordinate vehicle state management, motor propulsion speed control, serial telemetry, and instant safety interlocks without relying on a Real-Time Operating System (RTOS) or third-party framework abstractions.
 
