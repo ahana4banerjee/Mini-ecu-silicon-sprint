@@ -6,8 +6,8 @@
 
 | Phase | Description | Status | Target Completion |
 | :--- | :--- | :---: | :---: |
-| **Phase 0** | Project Foundation & Architecture Documentation | 🟡 **IN PROGRESS** | Current |
-| **Phase 1** | GPIO + System Foundation + FSM | ⚪ **NOT STARTED** | Phase 1 Sprint |
+| **Phase 0** | Project Foundation & Architecture Documentation | 🟢 **COMPLETED** | Current |
+| **Phase 1** | GPIO + System Foundation + FSM | 🟡 **IN PROGRESS** | Phase 1 Sprint |
 | **Phase 2** | ADC + PWM + Speed Control | ⚪ **NOT STARTED** | Phase 2 Sprint |
 | **Phase 3** | UART + Command Processing + Diagnostics | ⚪ **NOT STARTED** | Phase 3 Sprint |
 | **Phase 4** | EXTI + Emergency Stop + Recovery | ⚪ **NOT STARTED** | Phase 4 Sprint |
@@ -28,7 +28,7 @@ Establish the repository foundation, directory layout, target toolchain configur
 - [x] Author comprehensive project `README.md`
 - [x] Author technical system architecture document (`Docs/architecture.md`)
 - [x] Author development roadmap document (`Docs/roadmap.md`)
-- [ ] Finalize physical hardware pin mapping table *(Pending Phase 1 hardware setup)*
+- [x] Finalize physical hardware pin mapping table (`Core/Inc/board_config.h`)
 
 ### Expected Deliverables
 - Fully initialized repository structure
@@ -49,14 +49,14 @@ Establish the repository foundation, directory layout, target toolchain configur
 Configure GPIO peripherals, implement Touch START input sampling, drive status LEDs, and establish the core Finite State Machine (FSM) managing `IDLE` and `READY` states.
 
 ### Tasks
-- [ ] Define physical pin assignments for status LEDs and Touch START sensor
-- [ ] Initialize GPIO output pins for Orange, Green, Blue, and Red status LEDs
-- [ ] Initialize GPIO input pin for Touch START input sensor
-- [ ] Implement core FSM state manager structure and enum states
-- [ ] Implement `IDLE` state behavior (Orange LED ON, Motor disabled)
-- [ ] Implement `READY` state behavior (Green LED ON, Motor disabled)
-- [ ] Implement FSM transition logic from `IDLE` $\rightarrow$ `READY` on Touch START trigger
-- [ ] Implement visual LED verification routines
+- [x] Define physical pin assignments for status LEDs and Touch START sensor (`board_config.h`)
+- [x] Initialize GPIO output pins for Orange, Green, Blue, and Red status LEDs (`GPIOB`: PB0, PB1, PB2, PB10)
+- [x] Initialize GPIO input pin for Touch START input sensor (`GPIOA`: PA0)
+- [x] Implement core FSM state manager structure and enum states (`ecu_fsm.h` in PR)
+- [x] Implement `IDLE` state behavior (Orange LED ON, Motor disabled) (`ecu_fsm.c` in PR)
+- [x] Implement `READY` state behavior (Green LED ON, Motor disabled) (`ecu_fsm.c` in PR)
+- [x] Implement FSM transition logic from `IDLE` $\rightarrow$ `READY` on Touch START trigger (`ecu_fsm.c` in PR)
+- [x] Implement visual LED verification routines
 
 ### Expected Deliverables
 - `gpio_indicators.c` / `gpio_indicators.h`
