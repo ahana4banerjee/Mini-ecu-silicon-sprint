@@ -1,177 +1,247 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 #include "ecu_fsm.h"
-#include "gpio_indicators.h"
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+#include "gpio.h"
+#include "uart.h"
 
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
+/* Private function prototypes */
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
+/* =========================================================
+   MAIN
+   ========================================================= */
 
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
 int main(void)
 {
+    ECU_Input input;
 
-  /* USER CODE BEGIN 1 */
+    /*
+     * These are the values that Member 2's ADC/PWM code
+     * will provide.
+     *
+     * Keep them here temporarily until Member 2 gives
+     * the actual interface.
+     */
+    uint16_t adc_value = 0U;
+    uint8_t pwm_percent = 0U;
 
-  /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+    /* -----------------------------------------------------
+       Basic MCU initialization
+       ----------------------------------------------------- */
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    HAL_Init();
 
-  /* USER CODE BEGIN Init */
+    SystemClock_Config();
 
-  /* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /* -----------------------------------------------------
+       Peripheral initialization
+       ----------------------------------------------------- */
 
-  /* USER CODE BEGIN SysInit */
+    GPIO_Init();
+    EXTI_Init();
 
-  /* USER CODE END SysInit */
+    UART2_Init();
 
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
+    ECU_FSM_Init();
 
-  /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
+    /* -----------------------------------------------------
+       Initial LED state
+       IDLE -> Orange ON
+       ----------------------------------------------------- */
 
-    /* USER CODE BEGIN 3 */
-  }
-  /* USER CODE END 3 */
+    GPIO_UpdateLEDs(ECU_FSM_GetState());
+
+
+    /* =====================================================
+       MAIN APPLICATION LOOP
+       ===================================================== */
+
+    while (1)
+    {
+        /*
+         * Start every loop with a clean event structure.
+         *
+         * Events are momentary:
+         * START, F, S and RESET are consumed once.
+         */
+        input.start_pressed = 0U;
+        input.f_received = 0U;
+        input.s_received = 0U;
+        input.reset_received = 0U;
+        input.emergency_active = 0U;
+        input.pwm_percent = pwm_percent;
+
+
+        /* =================================================
+           1. ADC / PWM
+           =================================================
+
+           MEMBER 2:
+           Replace/update this section with the actual
+           ADC/PWM interface.
+
+           For now:
+               adc_value    = ...
+               pwm_percent  = ...
+        */
+
+
+        /* =================================================
+           2. UART RECEIVE
+           ================================================= */
+
+        UART2_ProcessCommand();
+
+
+        /* =================================================
+           3. PHYSICAL INPUTS
+           ================================================= */
+
+        input.start_pressed =
+            GPIO_ReadSTARTPressedEvent();
+
+
+        /*
+         * E-STOP is checked as a LEVEL as well as an
+         * interrupt event.
+         *
+         * This is intentional:
+         *
+         *   Level -> remains emergency while button active
+         *   Event -> captures the EXTI emergency event
+         */
+        input.emergency_active =
+            (uint8_t)(
+                GPIO_ReadESTOPActive() ||
+                GPIO_TakeESTOPEvent()
+            );
+
+
+        /* =================================================
+           4. UART COMMAND EVENTS
+           ================================================= */
+
+        input.f_received =
+            UART_GetForwardCommand();
+
+        input.s_received =
+            UART_GetStopCommand();
+
+        input.reset_received =
+            UART_GetResetCommand();
+
+
+        /* =================================================
+           5. UPDATE FSM
+           ================================================= */
+
+        ECU_FSM_Update(&input);
+
+
+        /* =================================================
+           6. UPDATE LEDs FROM FSM STATE
+           ================================================= */
+
+        GPIO_UpdateLEDs(
+            ECU_FSM_GetState()
+        );
+
+
+        /* =================================================
+           7. STATUS COMMAND
+           ================================================= */
+
+        UART2_StatusTask(
+            adc_value,
+            pwm_percent
+        );
+
+
+        /* =================================================
+           8. UART TRANSMIT
+           ================================================= */
+
+        UART2_TxTask();
+    }
 }
 
-/**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+
+/* =========================================================
+   SYSTEM CLOCK
+   ========================================================= */
+
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage
-  */
-  __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+    __HAL_RCC_PWR_CLK_ENABLE();
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    __HAL_PWR_VOLTAGESCALING_CONFIG(
+        PWR_REGULATOR_VOLTAGE_SCALE2
+    );
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    RCC_OscInitStruct.OscillatorType =
+        RCC_OSCILLATORTYPE_HSI;
+
+    RCC_OscInitStruct.HSIState =
+        RCC_HSI_ON;
+
+    RCC_OscInitStruct.HSICalibrationValue =
+        RCC_HSICALIBRATION_DEFAULT;
+
+    RCC_OscInitStruct.PLL.PLLState =
+        RCC_PLL_NONE;
+
+
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
+
+
+    RCC_ClkInitStruct.ClockType =
+          RCC_CLOCKTYPE_HCLK
+        | RCC_CLOCKTYPE_SYSCLK
+        | RCC_CLOCKTYPE_PCLK1
+        | RCC_CLOCKTYPE_PCLK2;
+
+    RCC_ClkInitStruct.SYSCLKSource =
+        RCC_SYSCLKSOURCE_HSI;
+
+    RCC_ClkInitStruct.AHBCLKDivider =
+        RCC_SYSCLK_DIV1;
+
+    RCC_ClkInitStruct.APB1CLKDivider =
+        RCC_HCLK_DIV1;
+
+    RCC_ClkInitStruct.APB2CLKDivider =
+        RCC_HCLK_DIV1;
+
+
+    if (HAL_RCC_ClockConfig(
+            &RCC_ClkInitStruct,
+            FLASH_LATENCY_0) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
-/* USER CODE BEGIN 4 */
 
-/* USER CODE END 4 */
+/* =========================================================
+   ERROR HANDLER
+   ========================================================= */
 
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
-  /* USER CODE END Error_Handler_Debug */
+    __disable_irq();
+
+    while (1)
+    {
+    }
 }
-#ifdef USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
-{
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
-}
-#endif /* USE_FULL_ASSERT */
